@@ -12,7 +12,7 @@ public class NavigationManager: MonoBehaviour
     public enum SceneName
     {
        Menu,
-       PlayMode_1
+       PlayMode
     }
 
    

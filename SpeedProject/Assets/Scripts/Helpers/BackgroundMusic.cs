@@ -5,9 +5,6 @@ using UnityEngine;
 public class BackgroundMusic : MonoBehaviour
 {
     AudioSource audioSource;
-
-    bool audioOn = true;
-
     void Start()
     {
         audioSource = gameObject.GetComponent<AudioSource>();
