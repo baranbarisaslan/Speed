@@ -8,7 +8,9 @@ public class LocalStorage : MonoBehaviour
     {
         Temp,
         PlayMode,
-        CurrentProgress
+        CurrentProgress,
+        HighestScore,
+        Streak
     }
 
 

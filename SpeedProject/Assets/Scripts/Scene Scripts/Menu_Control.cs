@@ -15,10 +15,4 @@ public class Menu_Control : MonoBehaviour
             GameObject.Find("Continue").GetComponent<Button>().interactable = true;
         }
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
