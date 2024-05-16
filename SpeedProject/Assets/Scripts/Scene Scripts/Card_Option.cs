@@ -11,9 +11,10 @@ public class Card_Option : MonoBehaviour
 
 
 
-    public void Flip()
+    public void GameFlip()
     {
         isFlipped = !isFlipped;
+        FindAnyObjectByType<PlayMode_Control>().AddCardToList(gameObject);
         StartCoroutine(FlipAnimation());
     }
 

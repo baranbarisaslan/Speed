@@ -4,23 +4,30 @@ using UnityEngine;
 
 public class BackgroundMusic : MonoBehaviour
 {
-    AudioSource audioSource;
-    void Start()
-    {
-        audioSource = gameObject.GetComponent<AudioSource>();
-        audioSource.loop = true;
-        Play_BackgroundMusic();
-    }
+    AudioSource source;
+    [SerializeField] AudioClip clip;
 
-    public void Play_BackgroundMusic()
+
+    public static BackgroundMusic instance;
+
+    void Awake()
     {
-        if (audioSource.isPlaying)
+        if (instance == null)
         {
-            Debug.Log("AudioPlaying");
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
         }
         else
         {
-            audioSource.Play();
+            Destroy(this.gameObject);
         }
+    }
+
+    void Start()
+    {
+        source = GetComponent<AudioSource>();
+        source.clip = clip;
+        source.loop = true;
+        source.Play();
     }
 }

@@ -19,6 +19,9 @@ public class PlayMode_Control : MonoBehaviour
     GameObject card;
     List<GameObject> cards;
 
+    public List<GameObject> flippedCards = new List<GameObject>();
+
+
     private List<string> planets;
 
     async void Start()
@@ -79,10 +82,9 @@ public class PlayMode_Control : MonoBehaviour
             await Task.Delay(150);
             cards[i].GetComponent<Card_Option>().GenerateFlip();
         }
+        grid.GetComponent<CanvasGroup>().interactable = true;
+
     }
-
-
-
 
 
     public void SetPlanets()
@@ -106,5 +108,56 @@ public class PlayMode_Control : MonoBehaviour
         string selectedPlanet = planets[index]; 
         planets.RemoveAt(index); 
         return selectedPlanet;
+    }
+
+
+
+    public void AddCardToList(GameObject card)
+    {
+        flippedCards.Add(card);
+
+        while (flippedCards.Count >= 2)
+        {
+            ProcessCardPair(flippedCards[0], flippedCards[1]);
+        }
+    }
+
+    private void ProcessCardPair(GameObject card1, GameObject card2)
+    {
+        flippedCards.Remove(card1);
+        flippedCards.Remove(card2);
+        if (card1.GetComponent<Card_Option>().planet == card2.GetComponent<Card_Option>().planet)
+        {
+            Success(card1, card2);
+        }
+        else
+        {
+            Failed(card1, card2);
+        }
+    }
+
+
+
+    async void Success(GameObject card1, GameObject card2)
+    {
+        Debug.Log("THEY ARE THE SAME");
+        await Task.Delay(500);
+
+        CanvasGroup cg1 = card1.GetComponent<CanvasGroup>();
+        cg1.interactable = false;
+        StartCoroutine(PhysicalFunctionHelper.Fade(cg1, 1, 0, 0.5f));
+
+        CanvasGroup cg2 = card2.GetComponent<CanvasGroup>();
+        cg2.interactable = false;
+        StartCoroutine(PhysicalFunctionHelper.Fade(cg2, 1, 0, 0.5f));
+    }
+
+    async void Failed(GameObject card1, GameObject card2)
+    {
+        Debug.Log("THEY ARE DIFFERENT");
+        await Task.Delay(500);
+
+        card1.GetComponent<Card_Option>().GenerateFlip();
+        card2.GetComponent<Card_Option>().GenerateFlip();
     }
 }
