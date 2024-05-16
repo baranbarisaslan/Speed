@@ -47,7 +47,14 @@ public class PlayMode_Control : MonoBehaviour
         if(col >= 6)
         {
             gridLayoutGroup.cellSize = new Vector2(150f, 150f);
-
+        }
+        else if (col >= 4)
+        {
+            gridLayoutGroup.cellSize = new Vector2(200f, 200f);
+        }
+        else
+        {
+            gridLayoutGroup.cellSize = new Vector2(250f, 250f);
         }
 
         highest = LocalStorage.GetData(LocalStorage.StorageValues.HighestScore);
@@ -61,14 +68,12 @@ public class PlayMode_Control : MonoBehaviour
 
     async Task SetLayout()
     {
-        Sprite planet;
         for (int i = 0; i < totalcount; i++)
         {
-            string planetname = GetRandomPlanet();
-            planet = Resources.Load<Sprite>(SpriteConstants.SpritesPath + planetname);
-            if (planet == null)
+            Sprite planet_sprite = GetRandomPlanet();
+            if (planet_sprite == null)
             {
-                Debug.LogError("Failed to load sprite: " + planetname);
+                Debug.LogError("Failed to load sprite: " + planet_sprite.name);
                 continue;
             }
 
@@ -76,10 +81,10 @@ public class PlayMode_Control : MonoBehaviour
             for (int j = 0; j < 2; j++)
             {
                 GameObject gamecard = Instantiate(card, grid.transform, false);
-                gamecard.name = "Card_" + (i * 2 + j).ToString();
                 GameObject child = gamecard.transform.Find("Game_Card").gameObject;
-                child.transform.Find("Icon").GetComponent<Image>().sprite = planet;
-                gamecard.GetComponent<Card_Option>().planet = planetname;
+                child.transform.Find("Icon").GetComponent<Image>().sprite = planet_sprite;
+                gamecard.GetComponent<Card_Option>().planet = planet_sprite.name;
+                gamecard.name = "Card_" + (i * 2 + j).ToString();
             }
         }
 
@@ -95,7 +100,7 @@ public class PlayMode_Control : MonoBehaviour
             cards[i].transform.SetSiblingIndex(i);
         }
 
-        await Task.Delay(1000);
+        await Task.Delay(250 * totalcount);
         for (int i = 0; i < cards.Count; i++)
         {
             await Task.Delay(100);
@@ -115,7 +120,7 @@ public class PlayMode_Control : MonoBehaviour
         }
     }
 
-    public string GetRandomPlanet()
+    public Sprite GetRandomPlanet()
     {
         if (planets.Count == 0)
         {
@@ -125,8 +130,9 @@ public class PlayMode_Control : MonoBehaviour
         Random random = new Random();
         int index = random.Next(planets.Count);
         string selectedPlanet = planets[index]; 
-        planets.RemoveAt(index); 
-        return selectedPlanet;
+        planets.RemoveAt(index);
+        Sprite planet = Resources.Load<Sprite>(SpriteConstants.SpritesPath + selectedPlanet);
+        return planet;
     }
 
 
@@ -188,43 +194,32 @@ public class PlayMode_Control : MonoBehaviour
         LocalStorage.SaveData(LocalStorage.StorageValues.Streak, "1");
 
     }
-     void AddScore()
+
+
+    ///Calculates the added score and the streak bonus
+    private int CalculateScoreMultiplier(int streak)
+    {
+        if (streak > 2)
+            return 10 * row * (streak - 1);
+        return 10 * row;
+    }
+
+    void AddScore()
     {
         int streak = Convert.ToInt32(LocalStorage.GetData(LocalStorage.StorageValues.Streak));
-        string current = GameObject.Find("Score").GetComponent<TMP_Text>().text;
+        int currentScore = Convert.ToInt32(GameObject.Find("Score").GetComponent<TMP_Text>().text);
+        int scoreToAdd = CalculateScoreMultiplier(streak);
 
-        int multiplier = streak - 1;
-        if (streak > 10)
+        if(streak > 2)
         {
-            score = Convert.ToInt32(current) + 20 * multiplier;
-            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak  +" " + (20 * multiplier) + " POINT!";
+            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = $"BONUS x{streak} {scoreToAdd} POINT!";
             ShowPopup();
         }
-        else if (streak > 8)
-        {
-            score = Convert.ToInt32(current) + 20 * multiplier;
-            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak + " " + (20 * multiplier) + " POINT!";
-            ShowPopup();
-        }
-        else if (streak > 5)
-        {
-            score = Convert.ToInt32(current) + 20 * multiplier;
-            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak + " " + (20 * multiplier) + " POINT!";
-            ShowPopup();
-        }
-        else if (streak > 2)
-        {
-            score = Convert.ToInt32(current) + 20 * multiplier;
-            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak + " " + (20 * multiplier) + " POINT!";
-            ShowPopup();
-        }
-        else
-            score = Convert.ToInt32(current) + 20;
+       
 
-        streak++;
-        GameObject.Find("Score").GetComponent<TMP_Text>().text = score.ToString();
-        LocalStorage.SaveData(LocalStorage.StorageValues.Streak, streak.ToString());
-
+        int newScore = currentScore + scoreToAdd;
+        GameObject.Find("Score").GetComponent<TMP_Text>().text = newScore.ToString();
+        LocalStorage.SaveData(LocalStorage.StorageValues.Streak, (++streak).ToString());
     }
 
 
@@ -319,56 +314,19 @@ public class PlayMode_Control : MonoBehaviour
 
     void NextLevel()
     {
-        if(mode == "2x2")
+        List<string> modes = new List<string> { "2x2", "2x3", "2x4", "3x4", "4x4", "4x5", "4x6", "5x6", "6x6", "6x7" };
+        int currentModeIndex = modes.IndexOf(mode);
+
+        if (currentModeIndex < modes.Count - 1)
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "2x3"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "2x3");
+            string nextMode = modes[currentModeIndex + 1];
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, nextMode);
+            LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, nextMode);
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
-        else if(mode == "2x3")
+        else
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "2x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "2x4");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "2x4")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "3x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "3x4");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "3x4")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "4x4");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "4x4")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x5"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "4x5");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "4x5")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x6"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "4x6");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "4x6")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "5x6"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "5x6");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "5x6")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x6"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x6");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "6x6")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x7"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x7");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "6x7")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x7");
             NavigationManager.SetMainScene(NavigationManager.SceneName.Menu);
         }
     }
-
 }

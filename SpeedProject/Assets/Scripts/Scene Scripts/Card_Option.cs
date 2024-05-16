@@ -17,7 +17,6 @@ public class Card_Option : MonoBehaviour
 
     public void GameFlip()
     {
-        Debug.Log("GAME FLIP");
         AudioClip clip = Resources.Load<AudioClip>(AudioConstants.AudioPath + "audio_flip");
         PlayAudio.Play(clip);
 
@@ -37,7 +36,6 @@ public class Card_Option : MonoBehaviour
 
     public void GenerateFlip()
     {
-        Debug.Log("GENERATE FLIP");
         StartCoroutine(FlipAnimation());
     }
 
