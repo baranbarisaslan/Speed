@@ -17,23 +17,33 @@ public class Card_Option : MonoBehaviour
 
     public void GameFlip()
     {
-        isFlipped = !isFlipped;
+        Debug.Log("GAME FLIP");
         AudioClip clip = Resources.Load<AudioClip>(AudioConstants.AudioPath + "audio_flip");
         PlayAudio.Play(clip);
 
-        FindAnyObjectByType<PlayMode_Control>().AddCardToList(gameObject);
-        StartCoroutine(FlipAnimation());
+        if(FindAnyObjectByType<PlayMode_Control>().flippedCards.Contains(gameObject))
+        {
+            FindAnyObjectByType<PlayMode_Control>().flippedCards.Remove(gameObject);
+            GenerateFlip();
+        }
+        else
+        {
+            FindAnyObjectByType<PlayMode_Control>().AddCardToList(gameObject);
+            StartCoroutine(FlipAnimation());
+        }
+
     }
 
 
     public void GenerateFlip()
     {
-        isFlipped = !isFlipped;
+        Debug.Log("GENERATE FLIP");
         StartCoroutine(FlipAnimation());
     }
 
     IEnumerator FlipAnimation()
     {
+        isFlipped = !isFlipped;
         float elapsedTime = 0f;
         Quaternion initialRotation = child.transform.rotation;
         Quaternion targetRotation;

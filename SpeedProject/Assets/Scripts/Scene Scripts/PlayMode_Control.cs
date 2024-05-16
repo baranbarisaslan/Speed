@@ -44,6 +44,11 @@ public class PlayMode_Control : MonoBehaviour
 
         totalcount = row * col / 2;
         gridLayoutGroup.constraintCount = col;
+        if(col >= 6)
+        {
+            gridLayoutGroup.cellSize = new Vector2(150f, 150f);
+
+        }
 
         highest = LocalStorage.GetData(LocalStorage.StorageValues.HighestScore);
         if(!string.IsNullOrEmpty(highest))
@@ -89,11 +94,8 @@ public class PlayMode_Control : MonoBehaviour
         {
             cards[i].transform.SetSiblingIndex(i);
         }
-        if(cards.Count <= 16)
-        {
-            await Task.Delay(1000);
-        }
 
+        await Task.Delay(1000);
         for (int i = 0; i < cards.Count; i++)
         {
             await Task.Delay(100);
@@ -107,7 +109,7 @@ public class PlayMode_Control : MonoBehaviour
     public void SetPlanets()
     {
         planets = new List<string>();
-        for (int i = 1; i <= 20; i++)
+        for (int i = 1; i <= 40; i++)
         {
             planets.Add($"Planet{i}");
         }
@@ -132,7 +134,6 @@ public class PlayMode_Control : MonoBehaviour
     public void AddCardToList(GameObject card)
     {
         flippedCards.Add(card);
-
         while (flippedCards.Count >= 2)
         {
             ProcessCardPair(flippedCards[0], flippedCards[1]);
@@ -269,10 +270,20 @@ public class PlayMode_Control : MonoBehaviour
             row = 2;
             col = 3;
         }
+        else if (mode == "2x4")
+        {
+            row = 2;
+            col = 4;
+        }
         else if (mode == "3x4")
         {
             row = 3;
             col = 4;
+        }
+        else if (mode == "3x6")
+        {
+            row = 3;
+            col = 6;
         }
         else if (mode == "4x4")
         {
@@ -298,16 +309,11 @@ public class PlayMode_Control : MonoBehaviour
         {
             row = 6;
             col = 6;
-        }
-        else if (mode == "6x8")
+        }   
+        else if (mode == "6x7")
         {
             row = 6;
-            col = 8;
-        }
-        else if (mode == "6x10")
-        {
-            row = 6;
-            col = 10;
+            col = 7;
         }
     }
 
@@ -319,6 +325,11 @@ public class PlayMode_Control : MonoBehaviour
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if(mode == "2x3")
+        {
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "2x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "2x4");
+            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
+        }
+        else if (mode == "2x4")
         {
             LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "3x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "3x4");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
@@ -350,17 +361,12 @@ public class PlayMode_Control : MonoBehaviour
         }
         else if (mode == "6x6")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x8"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x8");
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x7"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x7");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
-        else if (mode == "6x8")
+        else if (mode == "6x7")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x10"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x10");
-            NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
-        }
-        else if (mode == "6x10")
-        {
-            LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x10");
+            LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x7");
             NavigationManager.SetMainScene(NavigationManager.SceneName.Menu);
         }
     }
