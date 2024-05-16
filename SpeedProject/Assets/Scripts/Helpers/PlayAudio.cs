@@ -5,15 +5,9 @@ using static AppConstants;
 
 public class PlayAudio : MonoBehaviour
 {
-    AudioSource audioSource;
-
-    bool audioOn;
+    static AudioSource audioSource;
 
     public static PlayAudio Instance;
-
-
-    public static AudioClip correct;
-    public static AudioClip wrong;
 
 
     void Start()
@@ -24,27 +18,17 @@ public class PlayAudio : MonoBehaviour
         {
             Instance = this;
         }
-        correct = Resources.Load<AudioClip>(AudioConstants.AudioPath + "correctAnswer");    
-        wrong = Resources.Load<AudioClip>(AudioConstants.AudioPath + "wrongAnswer");
+
 
     }
 
-    public void Play(AudioClip audioClip)
+    public static void Play(AudioClip audioClip)
     {
-        if (audioOn)
+        if (audioSource.isPlaying)
         {
-            if (audioSource.isPlaying)
-            {
-                Debug.Log("another AudioPlaying");
-            }
-            else
-            {
-                if (audioClip != null)
-                {
-                    audioSource.clip = audioClip;
-                }
-                audioSource.Play();
-            }
+           audioSource.Stop();
         }
+        audioSource.clip = audioClip;
+        audioSource.Play();
     }
 }

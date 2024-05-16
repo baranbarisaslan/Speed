@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using static AppConstants;
 
 public class Card_Option : MonoBehaviour
 {
@@ -9,11 +10,17 @@ public class Card_Option : MonoBehaviour
 
     public string planet;
 
-
+    public void Home()
+    {
+        NavigationManager.SetMainScene(NavigationManager.SceneName.Menu);
+    }
 
     public void GameFlip()
     {
         isFlipped = !isFlipped;
+        AudioClip clip = Resources.Load<AudioClip>(AudioConstants.AudioPath + "audio_flip");
+        PlayAudio.Play(clip);
+
         FindAnyObjectByType<PlayMode_Control>().AddCardToList(gameObject);
         StartCoroutine(FlipAnimation());
     }

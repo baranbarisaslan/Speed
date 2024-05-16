@@ -19,6 +19,7 @@ public class PlayMode_Control : MonoBehaviour
 
     string highest;
     int score;
+    int high;
 
     GameObject grid;
     GridLayoutGroup gridLayoutGroup;
@@ -38,8 +39,9 @@ public class PlayMode_Control : MonoBehaviour
         LocalStorage.SaveData(LocalStorage.StorageValues.Streak, "1");
 
         mode = LocalStorage.GetData(LocalStorage.StorageValues.PlayMode);
-        row = Convert.ToInt32(mode[0].ToString());
-        col = Convert.ToInt32(mode[2].ToString());
+        Debug.Log(mode);
+        Calculate();
+
         totalcount = row * col / 2;
         gridLayoutGroup.constraintCount = col;
 
@@ -87,10 +89,14 @@ public class PlayMode_Control : MonoBehaviour
         {
             cards[i].transform.SetSiblingIndex(i);
         }
+        if(cards.Count <= 16)
+        {
+            await Task.Delay(1000);
+        }
 
         for (int i = 0; i < cards.Count; i++)
         {
-            await Task.Delay(150);
+            await Task.Delay(100);
             cards[i].GetComponent<Card_Option>().GenerateFlip();
         }
         grid.GetComponent<CanvasGroup>().interactable = true;
@@ -151,8 +157,9 @@ public class PlayMode_Control : MonoBehaviour
 
     async void Success(GameObject card1, GameObject card2)
     {
-        Debug.Log("THEY ARE THE SAME");
         await Task.Delay(500);
+        AudioClip clip = Resources.Load<AudioClip>(AudioConstants.AudioPath + "audio_correct");
+        PlayAudio.Play(clip);
 
         CanvasGroup cg1 = card1.GetComponent<CanvasGroup>();
         cg1.interactable = false;
@@ -162,8 +169,8 @@ public class PlayMode_Control : MonoBehaviour
         cg2.interactable = false;
         StartCoroutine(PhysicalFunctionHelper.Fade(cg2, 1, 0, 0.5f));
         AddScore();
-
-        if(grid.transform.childCount == 0)
+        totalcount--;
+        if(totalcount == 0)
         {
             GameOver();
         }
@@ -172,90 +179,188 @@ public class PlayMode_Control : MonoBehaviour
 
     async void Failed(GameObject card1, GameObject card2)
     {
-        Debug.Log("THEY ARE DIFFERENT");
         await Task.Delay(500);
-
+        AudioClip clip = Resources.Load<AudioClip>(AudioConstants.AudioPath + "audio_wrong");
+        PlayAudio.Play(clip);
         card1.GetComponent<Card_Option>().GenerateFlip();
         card2.GetComponent<Card_Option>().GenerateFlip();
         LocalStorage.SaveData(LocalStorage.StorageValues.Streak, "1");
 
     }
-    void AddScore()
+     void AddScore()
     {
         int streak = Convert.ToInt32(LocalStorage.GetData(LocalStorage.StorageValues.Streak));
-
         string current = GameObject.Find("Score").GetComponent<TMP_Text>().text;
-        score  = Convert.ToInt32(current) + 20 * streak;
-        GameObject.Find("Score").GetComponent<TMP_Text>().text = score.ToString();
 
+        int multiplier = streak - 1;
+        if (streak > 10)
+        {
+            score = Convert.ToInt32(current) + 20 * multiplier;
+            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak  +" " + (20 * multiplier) + " POINT!";
+            ShowPopup();
+        }
+        else if (streak > 8)
+        {
+            score = Convert.ToInt32(current) + 20 * multiplier;
+            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak + " " + (20 * multiplier) + " POINT!";
+            ShowPopup();
+        }
+        else if (streak > 5)
+        {
+            score = Convert.ToInt32(current) + 20 * multiplier;
+            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak + " " + (20 * multiplier) + " POINT!";
+            ShowPopup();
+        }
+        else if (streak > 2)
+        {
+            score = Convert.ToInt32(current) + 20 * multiplier;
+            GameObject.Find("Bonus").GetComponent<TMP_Text>().text = "BONUS" + " x" + streak + " " + (20 * multiplier) + " POINT!";
+            ShowPopup();
+        }
+        else
+            score = Convert.ToInt32(current) + 20;
 
         streak++;
+        GameObject.Find("Score").GetComponent<TMP_Text>().text = score.ToString();
         LocalStorage.SaveData(LocalStorage.StorageValues.Streak, streak.ToString());
+
+    }
+
+
+    async void ShowPopup()
+    {
+        GameObject.Find("BonusPopup").GetComponent<Animator>().SetBool("Show", true);
+        await Task.Delay(100);
+        GameObject.Find("BonusPopup").GetComponent<Animator>().SetBool("Show", false);
+
     }
 
     async void GameOver()
     {
         string oldheighest = LocalStorage.GetData(LocalStorage.StorageValues.HighestScore);
-        int high = Convert.ToInt32(oldheighest);
-        if(score > high)
+        AudioClip clip = Resources.Load<AudioClip>(AudioConstants.AudioPath + "audio_over");
+        PlayAudio.Play(clip);
+
+        if (!string.IsNullOrEmpty(oldheighest))
+            high = Convert.ToInt32(oldheighest);
+        else
+            high = 0;
+
+        if (score > high)
         {
             LocalStorage.SaveData(LocalStorage.StorageValues.HighestScore, score.ToString(), true);
         }
         LocalStorage.SaveData(LocalStorage.StorageValues.Streak, "1", true);
 
-        await Task.Delay(500);
+        await Task.Delay(1250);
         NextLevel();
+    }
+
+
+    void Calculate()
+    {
+        if (mode == "2x2")
+        {
+            row = 2;
+            col = 2;
+        }
+        else if (mode == "2x3")
+        {
+            row = 2;
+            col = 3;
+        }
+        else if (mode == "3x4")
+        {
+            row = 3;
+            col = 4;
+        }
+        else if (mode == "4x4")
+        {
+            row = 4;
+            col = 4;
+        }
+        else if (mode == "4x5")
+        {
+            row = 4;
+            col = 5;
+        }
+        else if (mode == "4x6")
+        {
+            row = 4;
+            col = 6;
+        }
+        else if (mode == "5x6")
+        {
+            row = 5;
+            col = 6;
+        }
+        else if (mode == "6x6")
+        {
+            row = 6;
+            col = 6;
+        }
+        else if (mode == "6x8")
+        {
+            row = 6;
+            col = 8;
+        }
+        else if (mode == "6x10")
+        {
+            row = 6;
+            col = 10;
+        }
     }
 
     void NextLevel()
     {
         if(mode == "2x2")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "2x3"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "2x3"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "2x3");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if(mode == "2x3")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "2x3"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "3x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "3x4");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "3x4")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x4"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x4"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "4x4");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "4x4")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x5"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x5"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "4x5");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "4x5")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x6"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "4x6"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "4x6");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "4x6")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "5x6"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "5x6"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "5x6");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "5x6")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x6"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x6"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x6");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "6x6")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x8"); 
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x8"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x8");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "6x8")
         {
-            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x10");
+            LocalStorage.SaveData(LocalStorage.StorageValues.PlayMode, "6x10"); LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x10");
             NavigationManager.SetMainScene(NavigationManager.SceneName.PlayMode);
         }
         else if (mode == "6x10")
         {
+            LocalStorage.SaveData(LocalStorage.StorageValues.CurrentProgress, "6x10");
             NavigationManager.SetMainScene(NavigationManager.SceneName.Menu);
         }
     }
